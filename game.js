@@ -28,6 +28,7 @@ const wrap  = (v, max) => ((v % max) + max) % max;
 const dist  = (a, b)   => Math.hypot(a.x - b.x, a.y - b.y);
 const rand  = (min, max) => min + Math.random() * (max - min);
 const randInt = (min, max) => Math.floor(rand(min, max + 1));
+const hexRgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)).join(', ');
 
 // ── Bullet ────────────────────────────────────────────────────────────────────
 class Bullet {
@@ -221,6 +222,7 @@ class Ship {
     this.invincible    = 3;
     this.shootCooldown = 0;
     this.speedTime     = 0;   // segundos restantes del powerup de velocidad
+    this.tripleTime    = 0;   // segundos restantes del powerup triple-shot
     this.dead          = false;
   }
 
@@ -229,6 +231,7 @@ class Ship {
     if (this.invincible    > 0) this.invincible    -= dt;
     if (this.shootCooldown > 0) this.shootCooldown -= dt;
     if (this.speedTime     > 0) this.speedTime     -= dt;
+    if (this.tripleTime    > 0) this.tripleTime    -= dt;
 
     const ROT   = 3.5;   // rad/s
     const THRUST = 260;  // px/s²
@@ -254,9 +257,21 @@ class Ship {
     if (this.shootCooldown > 0 || this.dead) return [];
     this.shootCooldown = 0.2;
     const NOSE = 21;
-    const ox = this.x + Math.cos(this.angle) * NOSE;
-    const oy = this.y + Math.sin(this.angle) * NOSE;
-    return [new Bullet(ox, oy, this.angle)];
+    const fx = Math.cos(this.angle);
+    const fy = Math.sin(this.angle);
+    // Tres balas paralelas, offset perpendicular a la nariz
+    if (this.tripleTime > 0) {
+      const ox = this.x + fx * NOSE;
+      const oy = this.y + fy * NOSE;
+      const px = -fy;
+      const py =  fx;
+      return [
+        new Bullet(ox + px * 7, oy + py * 7, this.angle),
+        new Bullet(ox,          oy,          this.angle),
+        new Bullet(ox - px * 7, oy - py * 7, this.angle),
+      ];
+    }
+    return [new Bullet(this.x + fx * NOSE, this.y + fy * NOSE, this.angle)];
   }
 
   draw() {
@@ -267,7 +282,9 @@ class Ship {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
-    ctx.strokeStyle = this.speedTime > 0 ? '#00e5ff' : '#fff';
+    ctx.strokeStyle = this.tripleTime > 0 ? '#ff3ec8'
+                    : this.speedTime  > 0 ? '#00e5ff'
+                    :                        '#fff';
     ctx.lineWidth   = 1.5;
     ctx.lineJoin    = 'round';
 
@@ -331,9 +348,10 @@ const POWERUP_TTL   = 8;
 const POWERUP_ALPHA = 0.12;   // probabilidad de soltarse al destruir un asteroide
 
 class Powerup {
-  constructor(x, y) {
+  constructor(x, y, type) {
     this.x = x;
     this.y = y;
+    this.type = type || 'speed';  // 'speed' | 'triple'
     this.ttl   = POWERUP_TTL;
     this.radius = 14;
     this.pulse = rand(0, Math.PI * 2);
@@ -348,21 +366,30 @@ class Powerup {
 
   draw() {
     const blink = this.ttl < 2 && Math.floor(this.ttl * 6) % 2 === 0 ? 0.3 : 1;
+    const color = this.type === 'triple' ? '#ff3ec8' : '#00e5ff';
     ctx.save();
     ctx.translate(this.x, this.y);
-    ctx.strokeStyle = `rgba(0, 229, 255, ${0.5 + blink * 0.5 * (0.8 + 0.2 * Math.sin(this.pulse))})`;
+    ctx.strokeStyle = `rgba(${hexRgb(color)}, ${0.5 + blink * 0.5 * (0.8 + 0.2 * Math.sin(this.pulse))})`;
     ctx.lineWidth   = 1.5;
     ctx.lineJoin    = 'round';
     ctx.beginPath();
     ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Doble chevron ">>" (velocidad)
-    ctx.fillStyle = `rgba(0, 229, 255, ${blink})`;
-    ctx.beginPath();
-    ctx.moveTo(-4, -8); ctx.lineTo( 4, 0); ctx.lineTo(-4, 8); ctx.lineTo(-1, 8);
-    ctx.lineTo( 7, 0);  ctx.lineTo(-1, -8); ctx.closePath();
-    ctx.fill();
+    if (this.type === 'triple') {
+      // Tres rayas verticales paralelas (disparo triple)
+      ctx.fillStyle = `rgba(${hexRgb(color)}, ${blink})`;
+      for (const dx of [-5, 0, 5]) {
+        ctx.fillRect(dx - 1, -8, 2, 16);
+      }
+    } else {
+      // Doble chevron ">>" (velocidad)
+      ctx.fillStyle = `rgba(${hexRgb(color)}, ${blink})`;
+      ctx.beginPath();
+      ctx.moveTo(-4, -8); ctx.lineTo( 4, 0); ctx.lineTo(-4, 8); ctx.lineTo(-1, 8);
+      ctx.lineTo( 7, 0);  ctx.lineTo(-1, -8); ctx.closePath();
+      ctx.fill();
+    }
     ctx.restore();
   }
 }
@@ -481,7 +508,10 @@ function update(dt) {
         a.dead = true;
         score += POINTS[a.size];
         explode(a.x, a.y, a.size * 5);
-        if (Math.random() < POWERUP_ALPHA) powerups.push(new Powerup(a.x, a.y));
+        if (Math.random() < POWERUP_ALPHA) {
+          const type = Math.random() < 0.5 ? 'speed' : 'triple';
+          powerups.push(new Powerup(a.x, a.y, type));
+        }
         newAsteroids.push(...a.split());
       }
     }
@@ -508,7 +538,8 @@ function update(dt) {
     for (const p of powerups) {
       if (!p.dead && dist(ship, p) < ship.radius + p.radius) {
         p.dead          = true;
-        ship.speedTime  = 5;
+        if (p.type === 'triple') ship.tripleTime = 5;
+        else                     ship.speedTime  = 5;
       }
     }
   }
@@ -569,6 +600,12 @@ function drawHUD() {
     ctx.fillStyle = '#00e5ff';
     ctx.font = '13px monospace';
     ctx.fillText(`VELOCIDAD ${ship.speedTime.toFixed(1)}s`, W / 2, 46);
+  }
+
+  if (ship.tripleTime > 0) {
+    ctx.fillStyle = '#ff3ec8';
+    ctx.font = '13px monospace';
+    ctx.fillText(`TRIPLE ${ship.tripleTime.toFixed(1)}s`, W / 2, 66);
   }
 
   for (let i = 0; i < lives; i++)
