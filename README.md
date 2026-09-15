@@ -29,6 +29,7 @@ Luego visita `http://localhost:3000`.
 | `←` `→`   | Rotar nave |
 | `↑`       | Propulsar  |
 | `Espacio` | Disparar   |
+| `1`–`5`   | Cambiar apariencia de la nave (skins) |
 
 ## Puntuación
 
@@ -45,3 +46,4 @@ Luego visita `http://localhost:3000`.
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
 - Estrella fugaz: asteroide veloz que cruza la pantalla y desaparece por sí sola; destruirla da muchos puntos
+- **System-skins**: 5 skins de nave seleccionables con las teclas `1`–`5` (Clásico, Neón Cian, Fénix, Phantom, Bandido), cada una con su color y silueta propios
