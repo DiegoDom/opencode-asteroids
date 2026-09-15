@@ -44,6 +44,7 @@ Luego visita `http://localhost:3000`.
 - 3 vidas con invencibilidad temporal al reaparecer (parpadeo)
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
+- Power-ups al destruir asteroides: **velocidad** (aceleración ×2 por 5 s) y **triple-shot** (3 disparos paralelos por 5 s)
 - Estrella fugaz: asteroide veloz que cruza la pantalla y desaparece por sí sola; destruirla da muchos puntos
 - Power-ups que sueltan los asteroides al ser destruidos:
   - **Velocidad**: propulsión al doble durante 5 segundos
