@@ -45,3 +45,6 @@ Luego visita `http://localhost:3000`.
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
 - Estrella fugaz: asteroide veloz que cruza la pantalla y desaparece por sí sola; destruirla da muchos puntos
+- Power-ups que sueltan los asteroides al ser destruidos:
+  - **Velocidad**: propulsión al doble durante 5 segundos
+  - **Escudo**: burbuja que protege la nave de asteroides y estrellas fugaces durante 5 segundos (no acumulable)
