@@ -29,6 +29,7 @@ Luego visita `http://localhost:3000`.
 | `←` `→`   | Rotar nave |
 | `↑`       | Propulsar  |
 | `Espacio` | Disparar   |
+| `1`–`5`   | Cambiar apariencia de la nave (skins) |
 
 ## Puntuación
 
@@ -44,8 +45,9 @@ Luego visita `http://localhost:3000`.
 - 3 vidas con invencibilidad temporal al reaparecer (parpadeo)
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
-- Power-ups al destruir asteroides: **velocidad** (aceleración ×2 por 5 s) y **triple-shot** (3 disparos paralelos por 5 s)
-- Estrella fugaz: asteroide veloz que cruza la pantalla y desaparece por sí sola; destruirla da muchos puntos
+- 5 skins de nave seleccionables con las teclas `1`–`5` (Clásico, Neón Cian, Fénix, Phantom, Bandido), cada una con su color y silueta propios
 - Power-ups que sueltan los asteroides al ser destruidos:
   - **Velocidad**: propulsión al doble durante 5 segundos
   - **Escudo**: burbuja que protege la nave de asteroides y estrellas fugaces durante 5 segundos (no acumulable)
+  - **Triple-shot**: 3 disparos paralelos durante 5 segundos
+- Estrella fugaz: asteroide veloz que cruza la pantalla y desaparece por sí sola; destruirla da muchos puntos

@@ -206,6 +206,57 @@ class ShootingStar {
   }
 }
 
+// ── Skins de la nave ──────────────────────────────────────────────────────────
+// Cada skin define su nombre, color de trazo, glow opcional y la silueta
+// (nariz, ala izquierda, muesca trasera, ala derecha) en espacio local.
+const SKINS = [
+  {
+    name:   'CLÁSICO',
+    stroke: '#fff',
+    glow:   null,
+    points: [[20, 0], [-12, -9], [-7, 0], [-12, 9]],
+    lineWidth: 1.5,
+  },
+  {
+    name:   'NEÓN CIAN',
+    stroke: '#00e5ff',
+    glow:   'rgba(0, 229, 255, 0.35)',
+    points: [[22, 0], [-10, -6], [-6, 0], [-10, 6]],
+    lineWidth: 1.5,
+  },
+  {
+    name:   'FÉNIX',
+    stroke: '#ffb700',
+    glow:   'rgba(255, 183, 0, 0.35)',
+    points: [[20, 0], [-14, -12], [-6, 0], [-14, 12]],
+    lineWidth: 1.5,
+  },
+  {
+    name:   'PHANTOM',
+    stroke: '#a64dff',
+    glow:   'rgba(166, 77, 255, 0.35)',
+    points: [[24, 0], [-8, -5], [-4, 0], [-8, 5]],
+    lineWidth: 1.5,
+  },
+  {
+    name:   'BANDIDO',
+    stroke: '#ff2d2d',
+    glow:   'rgba(255, 45, 45, 0.35)',
+    points: [[22, 0], [-13, -10], [-5, 0], [-13, 10]],
+    lineWidth: 1.5,
+  },
+];
+
+function handleSkinInput() {
+  const SHIP = SKINS.length;
+  for (let i = 0; i < SHIP; i++) {
+    if (pressed(`Digit${i + 1}`)) {
+      ship.skinIdx = i;
+      break;
+    }
+  }
+}
+
 // ── Ship ──────────────────────────────────────────────────────────────────────
 class Ship {
   constructor() { this.reset(); }
@@ -217,6 +268,7 @@ class Ship {
     this.vx     = 0;
     this.vy     = 0;
     this.radius = 12;
+    this.skinIdx          = 0;
     this.thrusting     = false;
     this.invincible    = 3;
     this.shootCooldown = 0;
@@ -283,18 +335,31 @@ class Ship {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
-    ctx.strokeStyle = this.tripleTime > 0 ? '#ff3ec8'
-                    : this.speedTime  > 0 ? '#00e5ff'
-                    :                        '#fff';
-    ctx.lineWidth   = 1.5;
-    ctx.lineJoin    = 'round';
+    const skin = SKINS[this.skinIdx] || SKINS[0];
+    const color = this.tripleTime > 0 ? '#ff3ec8'
+                : this.speedTime  > 0 ? '#00e5ff'
+                :                        skin.stroke;
 
-    // Silueta clásica: triángulo con muesca trasera
+    // Silueta según el skin activo
+    ctx.lineJoin = 'round';
+
+    if (skin.glow) {
+      ctx.strokeStyle = skin.glow;
+      ctx.lineWidth   = skin.lineWidth + 3;
+      ctx.beginPath();
+      ctx.moveTo(skin.points[0][0], skin.points[0][1]);
+      for (let i = 1; i < skin.points.length; i++)
+        ctx.lineTo(skin.points[i][0], skin.points[i][1]);
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = skin.lineWidth;
     ctx.beginPath();
-    ctx.moveTo( 20,  0);   // nariz
-    ctx.lineTo(-12, -9);   // ala izquierda
-    ctx.lineTo( -7,  0);   // muesca trasera
-    ctx.lineTo(-12,  9);   // ala derecha
+    ctx.moveTo(skin.points[0][0], skin.points[0][1]);
+    for (let i = 1; i < skin.points.length; i++)
+      ctx.lineTo(skin.points[i][0], skin.points[i][1]);
     ctx.closePath();
     ctx.stroke();
 
@@ -487,6 +552,8 @@ function killShip() {
 
 // ── Update ────────────────────────────────────────────────────────────────────
 function update(dt) {
+  handleSkinInput();
+
   if (state === 'gameover') {
     if (pressed('Space')) initGame();
     particles.forEach(p => p.update(dt));
@@ -636,22 +703,27 @@ function drawHUD() {
   ctx.textAlign = 'center';
   ctx.fillText(`NIVEL ${level}`, W / 2, 26);
 
+  const skin = SKINS[ship.skinIdx] || SKINS[0];
+  ctx.fillStyle = skin.stroke;
+  ctx.font = '12px monospace';
+  ctx.fillText(`SKIN: ${skin.name}  (TECLAS 1-5)`, W / 2, 64);
+
   if (ship.speedTime > 0) {
     ctx.fillStyle = '#00e5ff';
     ctx.font = '13px monospace';
     ctx.fillText(`VELOCIDAD ${ship.speedTime.toFixed(1)}s`, W / 2, 46);
   }
 
-if (ship.tripleTime > 0) {
+  if (ship.tripleTime > 0) {
     ctx.fillStyle = '#ff3ec8';
     ctx.font = '13px monospace';
-    ctx.fillText(`TRIPLE ${ship.tripleTime.toFixed(1)}s`, W / 2, 64);
+    ctx.fillText(`TRIPLE ${ship.tripleTime.toFixed(1)}s`, W / 2, 82);
   }
 
   if (ship.shieldTime > 0) {
     ctx.fillStyle = '#3aff6e';
     ctx.font = '13px monospace';
-    ctx.fillText(`ESCUDO ${ship.shieldTime.toFixed(1)}s`, W / 2, 82);
+    ctx.fillText(`ESCUDO ${ship.shieldTime.toFixed(1)}s`, W / 2, 100);
   }
 
   for (let i = 0; i < lives; i++)
