@@ -1,0 +1,32 @@
+name: opencode-triage
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Triage del issue con opencode
+        uses: anomalyco/opencode/github@latest
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+        with:
+          model: opencode/big-pickle
+          prompt: |
+            Estás triando el issue recién abierto de Asteroids (juego canvas en un solo game.js).
+            Sigue exactamente las reglas del archivo .opencode/issue-triage.md.
+            En resumen:
+            - NO modifiques el cuerpo del issue, el título ni ningún archivo del repo.
+            - Aplica etiquetas: créalas con `gh label create <nombre> --force` si faltan y aplícalas con `gh issue edit <N> --add-label <nombre>`. Si `gh` no está autenticado, obtén el token desde la configuración de git (extraheader) como indica el archivo de reglas.
+            - El número N sale de la rama actual (formato opencode/issueN-...) o de `gh issue list`.
+            - Tu RESPUESTA FINAL será publicada automáticamente como comentario de triaje; haz que sea el comentario completo, en español.
