@@ -29,7 +29,7 @@ Luego visita `http://localhost:3000`.
 | `←` `→`   | Rotar nave |
 | `↑`       | Propulsar  |
 | `Espacio` | Disparar   |
-| `1`–`5`   | Cambiar apariencia de la nave (skins) |
+| `1`–`6`   | Cambiar apariencia de la nave (skins) |
 
 ## Puntuación
 
@@ -45,7 +45,8 @@ Luego visita `http://localhost:3000`.
 - 3 vidas con invencibilidad temporal al reaparecer (parpadeo)
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
-- 5 skins de nave seleccionables con las teclas `1`–`5` (Clásico, Neón Cian, Fénix, Phantom, Bandido), cada una con su color y silueta propios
+- 6 skins de nave seleccionables con las teclas `1`–`6` (Clásico, Neón Cian, Fénix, Phantom, Bandido, Naranja), cada una con su color y silueta propios
+- La skin **Naranja** (tecla `6`) es más larga que la original y otorga el doble de puntos al destruir asteroides y estrellas fugaces
 - Power-ups que sueltan los asteroides al ser destruidos:
   - **Velocidad**: propulsión al doble durante 5 segundos
   - **Escudo**: burbuja que protege la nave de asteroides y estrellas fugaces durante 5 segundos (no acumulable)

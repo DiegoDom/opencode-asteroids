@@ -245,7 +245,20 @@ const SKINS = [
     points: [[22, 0], [-13, -10], [-5, 0], [-13, 10]],
     lineWidth: 1.5,
   },
+  {
+    // Más larga que la original y otorga el doble de puntos
+    name:   'NARANJA',
+    stroke: '#ff7b00',
+    glow:   'rgba(255, 123, 0, 0.35)',
+    points: [[34, 0], [-14, -10], [-7, 0], [-14, 10]],
+    lineWidth: 1.5,
+    scoreMult: 2,
+  },
 ];
+
+function scoreMult() {
+  return (SKINS[ship.skinIdx] || SKINS[0]).scoreMult || 1;
+}
 
 function handleSkinInput() {
   const SHIP = SKINS.length;
@@ -259,7 +272,10 @@ function handleSkinInput() {
 
 // ── Ship ──────────────────────────────────────────────────────────────────────
 class Ship {
-  constructor() { this.reset(); }
+  constructor() {
+    this.skinIdx = 0;
+    this.reset();
+  }
 
   reset() {
     this.x      = W / 2;
@@ -268,7 +284,6 @@ class Ship {
     this.vx     = 0;
     this.vy     = 0;
     this.radius = 12;
-    this.skinIdx          = 0;
     this.thrusting     = false;
     this.invincible    = 3;
     this.shootCooldown = 0;
@@ -603,7 +618,7 @@ function update(dt) {
       if (!a.dead && !b.dead && dist(b, a) < a.radius) {
         b.dead = true;
         a.dead = true;
-        score += POINTS[a.size];
+        score += POINTS[a.size] * scoreMult();
         explode(a.x, a.y, a.size * 5);
         if (Math.random() < POWERUP_ALPHA) {
           // Distribución equitativa entre los tres tipos de powerup
@@ -626,7 +641,7 @@ function update(dt) {
       if (!s.dead && !b.dead && dist(b, s) < s.radius) {
         b.dead = true;
         s.dead = true;
-        score += STAR_POINTS;
+        score += STAR_POINTS * scoreMult();
         explode(s.x, s.y, 12);
       }
     }
@@ -706,7 +721,7 @@ function drawHUD() {
   const skin = SKINS[ship.skinIdx] || SKINS[0];
   ctx.fillStyle = skin.stroke;
   ctx.font = '12px monospace';
-  ctx.fillText(`SKIN: ${skin.name}  (TECLAS 1-5)`, W / 2, 64);
+  ctx.fillText(`SKIN: ${skin.name}${skin.scoreMult > 1 ? '  [PUNTOS x2]' : ''}  (TECLAS 1-${SKINS.length})`, W / 2, 64);
 
   if (ship.speedTime > 0) {
     ctx.fillStyle = '#00e5ff';
